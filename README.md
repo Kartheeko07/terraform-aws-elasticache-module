@@ -1,5 +1,5 @@
 # terraform-aws-elasticache-module
-This terraform module is to create an AWS ElastiCache Replica Set/Cluster.
+This terraform module is to create an AWS ElastiCache Replica Set/Cluster. The purpose of this module is not to limit the IAC to a specific team/project but rather be used across different Business Units/Organizations.
 
 ## Table of contents
 
@@ -14,7 +14,12 @@ This terraform module is to create an AWS ElastiCache Replica Set/Cluster.
   - [Outputs](#outputs)
   
 ## Overview
-  -  A Terraform module to create an AWS Redis ElastiCache Replica Set
+  - This is terraform module to create an AWS Redis ElastiCache Replica Set
+  - The following components are also created as part of this module to support the Elasticache Redis Cluster Infrastructure
+    - Redis Parameter Group with custom parameters which can be controlled in the vars
+    - Redis Subnet Group to support the Cluster
+    - Custom Security Group which is dedicated to the Redis Cluster
+    - Post Creation the Authentication Details are put into a custom AWS Secret Manager for Security Purposes
 
 ## Usage 
 ```hcl
@@ -54,8 +59,8 @@ module "aws-elasticache" {
 | cluster\_mode\_num\_node\_groups | Number of node groups (shards) for this Redis replication group. Changing this number will trigger an online resizing operation before other settings modifications | `number` | `0` | no |
 | cluster\_mode\_replicas\_per\_node\_group | Number of replica nodes in each node group. Valid values are 0 to 5. Changing this number will force a new resource | `number` | `0` | no |
 | cluster\_size | Number of nodes in the redis cluster. \*Ignored when `cluster_mode_enabled` == `true`\* | `number` | `2` | no |
-| family | Redis family | `string` | `"redis5.0"` | no |
-| mandatory\_elasticache\_tags | The Default tags that should be present while creating the application | `map(any)` | <pre>{<br>  "Classification": "Internal",<br>  "Name": "BizOps Redis",<br>  "Owner": "Infrastructure",<br>  "Service": "Elasticache Redis"<br>}</pre> | no |
+| family | Redis family | `string` | `"redis6.x"` | no |
+| mandatory\_elasticache\_tags | The Default tags that should be present while creating the application | `map(any)` | <pre>{<br>  "Classification": "Internal",<br>  "Name": "DevOps Redis",<br>  "Owner": "Infrastructure",<br>  "Service": "Elasticache Redis"<br>}</pre> | no |
 | multi\_az\_enabled | Multi AZ (Automatic Failover must also be enabled.  If Cluster Mode is enabled, Multi AZ is on by default, and this setting is ignored) | `bool` | `true` | no |
 | name | Name for the Redis replication group i.e. UserObject | `string` | `"redis-devops"` | no |
 | parameter | A list of Redis parameters to apply. Note that parameters may differ from one Redis family to another | <pre>list(object({<br>    name  = string<br>    value = string<br>  }))</pre> | <pre>[<br>  {<br>    "name": "maxmemory-policy",<br>    "value": "allkeys-lru"<br>  }<br>]</pre> | no |
@@ -68,14 +73,14 @@ module "aws-elasticache" {
 | redis\_secret\_name | n/a | `string` | `"redis-devops"` | no |
 | redis\_snapshot\_retention\_limit | The number of days for which ElastiCache will retain automatic cache cluster snapshots before deleting them. For example, if you set SnapshotRetentionLimit to 5, then a snapshot that was taken today will be retained for 5 days before being deleted. If the value of SnapshotRetentionLimit is set to zero (0), backups are turned off. Please note that setting a snapshot\_retention\_limit is not supported on cache.t1.micro or cache.t2.\* cache nodes | `number` | `0` | no |
 | redis\_snapshot\_window | The daily time range (in UTC) during which ElastiCache will begin taking a daily snapshot of your cache cluster. The minimum snapshot window is a 60 minute period | `string` | `"06:30-07:30"` | no |
-| redis\_version | Redis version to use, defaults to 5.0.6 | `string` | `"5.0.6"` | no |
+| redis\_version | Redis version to use, defaults to 6.x | `string` | `"6.x"` | no |
 | snapshot\_arns | A single-element string list containing an Amazon Resource Name (ARN) of a Redis RDB snapshot file stored in Amazon S3. Example: arn:aws:s3:::my\_bucket/snapshot1.rdb | `list(string)` | `[]` | no |
 | snapshot\_name | The name of a snapshot from which to restore data into the new node group. Changing the snapshot\_name forces a new resource | `string` | `""` | no |
 | subnet\_group\_name | name of the subnet group | `string` | `"redis-devops"` | no |
-| subnet\_ids | ID | `list(string)` | <pre>[<br>  "subnet-00e18ad0f2b2b4715",<br>  "subnet-09eb1fe49c63f4a56",<br>  "subnet-0fd3860d518971a49"<br>]</pre> | no |
+| subnet\_ids | ID | `list(string)` | `[]` | no |
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | `map(any)` | `{}` | no |
 | transit\_encryption\_enabled | Whether to enable encryption in transit. If this is enabled, use the [following guide](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/in-transit-encryption.html#connect-tls) to access redis | `bool` | `true` | no |
-| vpc\_id | VPC ID to create the cluster in (e.g. `vpc-a22222ee`) | `string` | `"vpc-045ca1e2a3863bccf"` | no |
+| vpc\_id | VPC ID to create the cluster in (e.g. `vpc-a22222ee`) | `string` | `""` | no |
 
 ## Outputs
 
